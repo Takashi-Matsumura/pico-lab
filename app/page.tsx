@@ -23,6 +23,7 @@ export default function Home() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [running, setRunning] = useState(false);
   const [device, setDevice] = useState<PicoDevice | null>(null);
+  const [osLabel, setOsLabel] = useState<string | null>(null);
 
   const fetchDevice = useCallback(async () => {
     try {
@@ -39,6 +40,13 @@ export default function Home() {
     const id = setInterval(fetchDevice, 3000);
     return () => clearInterval(id);
   }, [fetchDevice]);
+
+  useEffect(() => {
+    fetch("/api/system")
+      .then((res) => res.json())
+      .then((data) => setOsLabel(data.label))
+      .catch(() => {});
+  }, []);
 
   const handleRun = async () => {
     const res = await fetch("/api/pico/run", {
@@ -63,6 +71,11 @@ export default function Home() {
       <header className="flex items-center justify-between border-b border-zinc-800 px-6 py-3">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold tracking-tight">PicoLab</h1>
+          {osLabel && (
+            <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+              {osLabel}
+            </span>
+          )}
           <div
             title={
               device

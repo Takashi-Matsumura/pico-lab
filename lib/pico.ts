@@ -3,7 +3,8 @@ import { writeFileSync, unlinkSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
-const MPREMOTE = "/Users/matsbaccano/.local/bin/mpremote";
+// mpremote は PATH から解決。Windows では "mpremote.exe" が使われる
+const MPREMOTE = "mpremote";
 
 // Pico の USB Vendor:Product ID
 const PICO_VID_PID = "2e8a:0005";
@@ -23,7 +24,8 @@ export function detectDevice(): PicoDevice | null {
     for (const line of output.split("\n")) {
       if (!line.includes(PICO_VID_PID)) continue;
       const parts = line.split(/\s+/);
-      // /dev/cu.usbmodem11301 e66368254f6c5333 2e8a:0005 MicroPython Board in FS mode
+      // macOS:   /dev/cu.usbmodem11301 e66368254f6c5333 2e8a:0005 MicroPython Board in FS mode
+      // Windows: COM3                  e66368254f6c5333 2e8a:0005 MicroPython Board in FS mode
       const port = parts[0].replace("/dev/cu.", "/dev/tty.");
       const serial = parts[1];
       const description = parts.slice(3).join(" ");
