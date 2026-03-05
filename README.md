@@ -104,4 +104,9 @@ OPENAI_API_KEY=your-api-key-here
 - TypeScript
 - Tailwind CSS 4
 - OpenAI API（AI ラボメン）
+- CodeMirror 6（コードエディタ）
 - MicroPython + mpremote
+
+## ライセンス
+
+MIT License &copy; MatsBACCANO
