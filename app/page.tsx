@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import CodeEditor from "./components/CodeEditor";
 import Chat from "./components/Chat";
+import ThemeToggle from "./components/ThemeToggle";
 
 interface PicoDevice {
   port: string;
@@ -33,7 +34,6 @@ export default function Home() {
       const res = await fetch("/api/pico/device");
       const data = await res.json();
       setDevice(data.device ?? null);
-      // サーバーの実行状態と同期
       if (data.running !== undefined) {
         setRunning(data.running);
       }
@@ -76,12 +76,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-950 text-zinc-100">
-      <header className="flex items-center justify-between border-b border-zinc-800 px-6 py-3">
+    <div className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <header className="flex items-center justify-between border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold tracking-tight">PicoLab</h1>
           {osLabel && (
-            <span className="rounded bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+            <span className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
               {osLabel}
             </span>
           )}
@@ -91,26 +91,27 @@ export default function Home() {
                 ? "Pico はシリアルデバイスとして接続されています。USBケーブルはそのまま抜き差しできます（OS の取り出し操作は不要です）。"
                 : "Pico が検出されません。USBケーブルで接続してください。MicroPython ファームウェアが必要です。"
             }
-            className="flex cursor-help items-center gap-2 rounded-md border border-zinc-800 px-3 py-1 text-xs"
+            className="flex cursor-help items-center gap-2 rounded-md border border-zinc-200 px-3 py-1 text-xs dark:border-zinc-800"
           >
             <span
               className={`inline-block h-2 w-2 rounded-full ${
-                device ? "bg-emerald-400" : "bg-zinc-600"
+                device ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-600"
               }`}
             />
             {device ? (
-              <span className="text-zinc-300">
+              <span className="text-zinc-600 dark:text-zinc-300">
                 {device.description}{" "}
-                <span className="text-zinc-500">({device.port})</span>
+                <span className="text-zinc-400 dark:text-zinc-500">({device.port})</span>
               </span>
             ) : (
-              <span className="text-zinc-500">未接続</span>
+              <span className="text-zinc-400 dark:text-zinc-500">未接続</span>
             )}
           </div>
         </div>
+        <ThemeToggle />
       </header>
       <main className="flex flex-1 overflow-hidden">
-        <div className="flex w-1/2 border-r border-zinc-800">
+        <div className="flex w-1/2 border-r border-zinc-200 dark:border-zinc-800">
           <CodeEditor
             code={code}
             onChange={setCode}

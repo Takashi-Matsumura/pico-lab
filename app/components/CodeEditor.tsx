@@ -29,23 +29,24 @@ export default function CodeEditor({
 }: CodeEditorProps) {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2">
-        <span className="text-xs font-medium text-zinc-400">main.py</span>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">main.py</span>
+        <div className="flex items-center gap-3">
           <button
             onClick={onRun}
             disabled={running || stopping || !deviceConnected}
-            className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="実行"
           >
-            <VscPlay className="text-sm" /> 実行
+            <VscPlay className="text-base" />
           </button>
           <button
             onClick={onStop}
             disabled={!running || stopping}
-            className="flex items-center gap-1.5 rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-600 text-white transition-colors hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            title={stopping ? "停止中..." : "停止"}
           >
-            {stopping ? <Spinner /> : <VscDebugStop className="text-sm" />}
-            {stopping ? "停止中..." : "停止"}
+            {stopping ? <Spinner /> : <VscDebugStop className="text-base" />}
           </button>
         </div>
       </div>
@@ -53,7 +54,7 @@ export default function CodeEditor({
         value={code}
         onChange={(e) => onChange(e.target.value)}
         spellCheck={false}
-        className="flex-1 resize-none bg-zinc-900 p-4 font-mono text-sm leading-relaxed text-zinc-100 outline-none"
+        className="flex-1 resize-none bg-zinc-50 p-4 font-mono text-sm leading-relaxed text-zinc-900 outline-none dark:bg-zinc-900 dark:text-zinc-100"
       />
     </div>
   );
