@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PicoLab
 
-## Getting Started
+AIと会話しながら Raspberry Pi Pico の電子回路を作る開発環境です。
 
-First, run the development server:
+ブラウザ上のエディタから MicroPython コードを編集し、USB 経由で Pico に転送・実行できます。
+
+## 前提条件
+
+- Node.js 22 以上
+- Python 3
+- Raspberry Pi Pico
+- USB ケーブル（Pico と PC の接続用）
+
+## Pico のファームウェアセットアップ
+
+初めて Pico を使う場合、MicroPython ファームウェアの書き込みが必要です。
+
+### 1. ファームウェアのダウンロード
+
+[MicroPython 公式ダウンロードページ](https://micropython.org/download/RPI_PICO/) から Raspberry Pi Pico 用の `.uf2` ファイルをダウンロードしてください。
+
+### 2. Pico をストレージモードで接続
+
+Pico 基板上の **BOOTSEL ボタンを押しながら** USB ケーブルで PC に接続します。`RPI-RP2` という名前の USB ドライブとして認識されます。
+
+### 3. ファームウェアの書き込み
+
+ダウンロードした `.uf2` ファイルを USB ドライブにコピーします。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp RPI_PICO-*.uf2 /Volumes/RPI-RP2/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+コピー完了後、Pico が自動的にリブートし MicroPython が使えるようになります。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. mpremote のインストール
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+PC から Pico にプログラムを転送するために `mpremote` をインストールします。
 
-## Learn More
+```bash
+pipx install mpremote
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 5. 接続確認
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+mpremote connect /dev/tty.usbmodem* exec "import sys; print(sys.implementation)"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+MicroPython のバージョン情報が表示されれば準備完了です。
 
-## Deploy on Vercel
+## インストールと起動
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+http://localhost:3000 にアクセスしてください。
+
+## 使い方
+
+1. エディタに MicroPython コードを記述
+2. 「再生」ボタンで Pico にコードを転送・実行
+3. 「停止」ボタンで実行を停止
+
+## 技術スタック
+
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS 4
+- MicroPython + mpremote
