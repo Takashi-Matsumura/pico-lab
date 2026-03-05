@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import CodeEditor from "./components/CodeEditor";
+import Chat from "./components/Chat";
 
 interface PicoDevice {
   port: string;
@@ -22,6 +24,7 @@ while True:
 export default function Home() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [running, setRunning] = useState(false);
+  const [stopping, setStopping] = useState(false);
   const [device, setDevice] = useState<PicoDevice | null>(null);
   const [osLabel, setOsLabel] = useState<string | null>(null);
 
@@ -30,6 +33,10 @@ export default function Home() {
       const res = await fetch("/api/pico/device");
       const data = await res.json();
       setDevice(data.device ?? null);
+      // サーバーの実行状態と同期
+      if (data.running !== undefined) {
+        setRunning(data.running);
+      }
     } catch {
       setDevice(null);
     }
@@ -60,14 +67,16 @@ export default function Home() {
   };
 
   const handleStop = async () => {
+    setStopping(true);
     const res = await fetch("/api/pico/stop", { method: "POST" });
     if (res.ok) {
       setRunning(false);
     }
+    setStopping(false);
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-950 text-zinc-100">
+    <div className="flex h-screen flex-col bg-zinc-950 text-zinc-100">
       <header className="flex items-center justify-between border-b border-zinc-800 px-6 py-3">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold tracking-tight">PicoLab</h1>
@@ -91,37 +100,30 @@ export default function Home() {
             />
             {device ? (
               <span className="text-zinc-300">
-                {device.description} <span className="text-zinc-500">({device.port})</span>
+                {device.description}{" "}
+                <span className="text-zinc-500">({device.port})</span>
               </span>
             ) : (
               <span className="text-zinc-500">未接続</span>
             )}
           </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleRun}
-            disabled={running || !device}
-            className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span>▶</span> 再生
-          </button>
-          <button
-            onClick={handleStop}
-            disabled={!running}
-            className="flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span>■</span> 停止
-          </button>
-        </div>
       </header>
-      <main className="flex flex-1 flex-col p-4">
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          spellCheck={false}
-          className="flex-1 resize-none rounded-lg border border-zinc-800 bg-zinc-900 p-4 font-mono text-sm leading-relaxed text-zinc-100 outline-none focus:border-zinc-600"
-        />
+      <main className="flex flex-1 overflow-hidden">
+        <div className="flex w-1/2 border-r border-zinc-800">
+          <CodeEditor
+            code={code}
+            onChange={setCode}
+            running={running}
+            stopping={stopping}
+            deviceConnected={!!device}
+            onRun={handleRun}
+            onStop={handleStop}
+          />
+        </div>
+        <div className="flex w-1/2">
+          <Chat code={code} onCodeUpdate={setCode} />
+        </div>
       </main>
     </div>
   );
