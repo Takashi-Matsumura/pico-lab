@@ -82,15 +82,26 @@ npm run dev
 
 http://localhost:3000 にアクセスしてください。
 
+## 環境変数
+
+`.env.local` に API キーを設定してください（AI ラボメン機能に必要）。
+
+```
+OPENAI_API_KEY=your-api-key-here
+```
+
 ## 使い方
 
 1. エディタに MicroPython コードを記述
-2. 「再生」ボタンで Pico にコードを転送・実行
+2. 「実行」ボタンで Pico にコードを転送・実行
 3. 「停止」ボタンで実行を停止
+4. AI ラボメン（右パネル）にコードの解説や修正を依頼
+5. ヘッダー右上のボタンでダーク/ライトモードを切り替え
 
 ## 技術スタック
 
 - Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS 4
+- OpenAI API（AI ラボメン）
 - MicroPython + mpremote
