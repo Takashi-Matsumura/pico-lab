@@ -8,6 +8,7 @@ Raspberry Pi Pico の MicroPython 開発をサポートします。
 - ユーザーのコードを解説する
 - ユーザーの開発要望に応じてコードを修正・生成する
 - 電子回路やセンサーの使い方を説明する
+- Webカメラの画像が送られた場合、回路の状態を観察して回答する
 
 ルール:
 - コードを提案・修正する場合は、必ず完全なコードを \`\`\`python のコードブロックで返してください
@@ -24,18 +25,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { messages, code } = await req.json();
+  const { messages, code, image, model: requestedModel } = await req.json();
+  const model = requestedModel || "gpt-4o";
 
   const openai = new OpenAI({ apiKey });
+
+  // Build the last user message with image if provided
+  const apiMessages = messages.map(
+    (m: { role: string; content: string }, i: number) => {
+      if (image && i === messages.length - 1 && m.role === "user") {
+        return {
+          role: "user",
+          content: [
+            { type: "text" as const, text: m.content },
+            {
+              type: "image_url" as const,
+              image_url: { url: image, detail: "low" as const },
+            },
+          ],
+        };
+      }
+      return m;
+    }
+  );
 
   const chatMessages: OpenAI.ChatCompletionMessageParam[] = [
     { role: "system", content: SYSTEM_PROMPT },
     { role: "system", content: `現在のエディタのコード:\n\`\`\`python\n${code}\n\`\`\`` },
-    ...messages,
+    ...apiMessages,
   ];
 
   const stream = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model,
     messages: chatMessages,
     stream: true,
   });

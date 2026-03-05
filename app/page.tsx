@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CodeEditor from "./components/CodeEditor";
 import Chat from "./components/Chat";
+import Webcam, { type WebcamHandle } from "./components/Webcam";
 import ThemeToggle from "./components/ThemeToggle";
 
 interface PicoDevice {
@@ -23,6 +24,7 @@ while True:
     time.sleep(0.5)`;
 
 export default function Home() {
+  const webcamRef = useRef<WebcamHandle>(null);
   const [code, setCode] = useState(DEFAULT_CODE);
   const [running, setRunning] = useState(false);
   const [stopping, setStopping] = useState(false);
@@ -122,8 +124,17 @@ export default function Home() {
             onStop={handleStop}
           />
         </div>
-        <div className="flex w-1/2">
-          <Chat code={code} onCodeUpdate={setCode} />
+        <div className="flex w-1/2 flex-col">
+          <div className="h-1/2 border-b border-zinc-200 dark:border-zinc-800">
+            <Webcam ref={webcamRef} />
+          </div>
+          <div className="flex h-1/2">
+            <Chat
+              code={code}
+              onCodeUpdate={setCode}
+              onCaptureImage={() => webcamRef.current?.capture() ?? null}
+            />
+          </div>
         </div>
       </main>
     </div>

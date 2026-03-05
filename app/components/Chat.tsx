@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { VscSend } from "react-icons/vsc";
+import { VscDeviceCamera, VscSend } from "react-icons/vsc";
 
 interface Message {
   role: "user" | "assistant";
@@ -11,14 +11,24 @@ interface Message {
 interface ChatProps {
   code: string;
   onCodeUpdate: (code: string) => void;
+  onCaptureImage?: () => string | null;
 }
+
+const MODELS = [
+  { id: "gpt-4o", label: "GPT-4o" },
+  { id: "gpt-4o-mini", label: "GPT-4o mini" },
+  { id: "gpt-4.1", label: "GPT-4.1" },
+  { id: "gpt-4.1-mini", label: "GPT-4.1 mini" },
+  { id: "gpt-4.1-nano", label: "GPT-4.1 nano" },
+  { id: "o3-mini", label: "o3-mini" },
+];
 
 function extractCodeBlock(text: string): string | null {
   const match = text.match(/```python\n([\s\S]*?)```/);
   return match ? match[1].trim() : null;
 }
 
-export default function Chat({ code, onCodeUpdate }: ChatProps) {
+export default function Chat({ code, onCodeUpdate, onCaptureImage }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -28,6 +38,8 @@ export default function Chat({ code, onCodeUpdate }: ChatProps) {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [model, setModel] = useState("gpt-4o");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,6 +49,9 @@ export default function Chat({ code, onCodeUpdate }: ChatProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
+
+    const imageDataUrl = cameraEnabled ? (onCaptureImage?.() ?? null) : null;
+    if (cameraEnabled) setCameraEnabled(false);
 
     const userMessage: Message = { role: "user", content: input };
     const newMessages = [...messages, userMessage];
@@ -52,7 +67,12 @@ export default function Chat({ code, onCodeUpdate }: ChatProps) {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, code }),
+        body: JSON.stringify({
+          messages: apiMessages,
+          code,
+          image: imageDataUrl,
+          model,
+        }),
       });
 
       if (!res.ok) {
@@ -107,8 +127,19 @@ export default function Chat({ code, onCodeUpdate }: ChatProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+      <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">AI ラボメン</span>
+        <select
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="rounded border border-zinc-300 bg-white px-2 py-0.5 text-xs text-zinc-600 outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+        >
+          {MODELS.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg, i) => (
@@ -140,6 +171,19 @@ export default function Chat({ code, onCodeUpdate }: ChatProps) {
       </div>
       <form onSubmit={handleSubmit} className="border-t border-zinc-200 p-3 dark:border-zinc-800">
         <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => setCameraEnabled((v) => !v)}
+            className={`rounded-md p-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              cameraEnabled
+                ? "bg-amber-500 text-white hover:bg-amber-400"
+                : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+            }`}
+            title={cameraEnabled ? "カメラ撮影ON（送信時に画像を添付）" : "カメラ撮影OFF"}
+          >
+            <VscDeviceCamera className="text-base" />
+          </button>
           <input
             type="text"
             value={input}
